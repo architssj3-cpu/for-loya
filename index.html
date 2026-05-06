@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Will you go out with me?</title>
+    <style>
+        :root {
+            --bg-color: #f7f7f7;
+            --card-bg: #ffffff;
+            --primary-red: #c92a42;
+            --primary-hover: #a31d30;
+            --text-dark: #333333;
+            --text-gray: #777777;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            color: var(--text-dark);
+        }
+
+        .screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+        }
+
+        .active {
+            display: flex;
+        }
+
+        /* Step 1: Envelope Design */
+        .envelope-card {
+            background: var(--card-bg);
+            padding: 70px 40px 40px 40px; 
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            border: 1px solid #eaeaea;
+            overflow: hidden;
+            width: 100%;
+            max-width: 400px;
+            box-sizing: border-box;
+        }
+
+        .envelope-card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+        }
+
+        /* The Envelope Flap (CSS Triangle) */
+        .envelope-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 70px;
+            background-color: #f9f9f9;
+            border-bottom: 2px solid #f0f0f0;
+            clip-path: polygon(0 0, 100% 0, 50% 100%);
+            z-index: 0;
+        }
+
+        /* Ensuring text stays above the envelope flap */
+        .envelope-card > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .heart-icon {
+            color: var(--primary-red);
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        /* Step 2: Question */
+        h1 {
+            font-size: 28px;
+            margin-bottom: 5px;
+            line-height: 1.3;
+        }
+
+        .button-container {
+            position: relative;
+            width: 100%;
+            height: 350px; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap; 
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        #yes-btn {
+            background-color: var(--primary-red);
+            color: white;
+            box-shadow: 0 4px 10px rgba(201, 42, 66, 0.3);
+            z-index: 10;
+            max-width: 100%;
+            white-space: normal; 
+        }
+
+        #yes-btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        #no-btn {
+            background-color: #e0e0e0;
+            color: var(--text-dark);
+            position: relative;
+            z-index: 5;
+            transition: left 0.2s ease-out, top 0.2s ease-out, transform 0.2s; 
+        }
+
+        /* Updated Tooltip */
+        .tooltip {
+            position: absolute;
+            background: white;
+            padding: 12px 20px; 
+            border-radius: 25px;
+            font-size: 18px; 
+            font-weight: bold;
+            color: var(--primary-red); 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15); 
+            pointer-events: none;
+            animation: floatUp 6s ease-out forwards; 
+            white-space: nowrap;
+            z-index: 100; 
+        }
+
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-70px); } 
+        }
+
+        /* Step 3: Success */
+        .success-card {
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* CSS for your uploaded image */
+        .success-image {
+            max-width: 150px;
+            max-height: 150px;
+            border-radius: 50%; /* Circle profile pic style */
+            margin-bottom: 20px;
+            object-fit: cover; 
+            border: 4px solid var(--primary-red); 
+        }
+
+        .action-btn {
+            width: 100%;
+            padding: 15px;
+            margin-top: 10px;
+            border-radius: 10px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .btn-secondary { background-color: #f0f0f0; color: var(--text-dark); border: none; font-weight: bold; }
+        .btn-secondary:hover { background-color: #e0e0e0; }
+    </style>
+</head>
+<body>
+
+    <audio id="bg-music" loop>
+        <source src="music.mp3" type="audio/mpeg">
+    </audio>
+
+    <div id="step1" class="screen active">
+        <h2 style="font-weight: normal; color: #555; margin-bottom: 30px;">I have a very very important question to ask you...open the envelope to find out</h2>
+        
+        <div class="envelope-card" onclick="showStep2()">
+            <div class="heart-icon">💌</div>
+            <h3 style="margin: 0 0 10px 0;">open for the most important question of your life</h3>
+            
+            <p style="margin: 20px 0 0 0; font-weight: bold; line-height: 1.5;">For: the absolutely gorgeous girl who deserves the world aka Loya&lt;3</p>
+        </div>
+        <p style="font-size: 12px; color: #aaa; margin-top: 25px;">Tap the note to unfold 💌</p>
+    </div>
+
+    <div id="step2" class="screen">
+        <h1>Would you, Prarthana Das like to go on a date with me Archit Mahajan? 💕</h1>
+
+        <div class="button-container" id="btn-container">
+            <button id="yes-btn" onclick="showStep3()">YES OFCOURSE I WOULD WANT NOTHING MORE &lt;3</button>
+            <button id="no-btn" onmouseover="dodgeButton()">No 💔</button>
+        </div>
+    </div>
+
+    <div id="step3" class="screen">
+        <div class="success-card">
+            
+            <img src="image.jpg" alt="Celebration" class="success-image">
+            
+            <h1 style="color: var(--primary-red);">Date confirmed for 21st May 2026, Congratulations.</h1>
+            <p style="color: #666; margin-bottom: 30px;">we will be contacting you for further details and archit will be looking forward to getting you that hug</p>
+            
+            <p style="font-weight: bold; font-size: 18px; margin-bottom: 30px;">
+                <span id="senderName3">Archit Mahajan</span> ❤️ <span id="receiverName3">Prarthana Das</span>
+            </p>
+
+            <button class="action-btn btn-secondary" onclick="downloadReceipt()">Download Love Receipt 🧾</button>
+        </div>
+    </div>
+
+    <script>
+        // --- CUSTOMIZATION SECTION ---
+        const sender = "Archit Mahajan";
+        const receiver = "Prarthana Das";
+        
+        // Populate names on the success screen
+        document.getElementById('senderName3').innerText = sender;
+        document.getElementById('receiverName3').innerText = receiver;
+
+        // Your exact custom messages
+        const messages = [
+            "Bruh.",
+            "Dude stop playing around...",
+            "Just click on yes dumbass",
+            "Can you stop with the ragebaiting?",
+            "Do you know how much time i spent on this?",
+            "STOP",
+            "Fun fact last time i wet the bed i was in 10th grade",
+            "Im running out of things to write loya",
+            "Can you just click on yes already what the fuck",
+            "Do you really not wanna go on a date with me? :(",
+            "This is the last time if you click on no it over",
+            "SIKE BITCH",
+            "I dont think you understand the gravity of the situation...",
+            "GODDAMNIT LOYA CLICK YES",
+            "Why did i make this code so long fml",
+            "Baby please we'll have a great time i swear",
+            "youre smiling like an idiot right now arent you?"
+        ];
+
+        let hoverCount = 0;
+        let messageIndex = 0;
+
+        function showStep2() {
+            document.getElementById('step1').classList.remove('active');
+            document.getElementById('step2').classList.add('active');
+            
+            // --- START THE MUSIC! ---
+            const music = document.getElementById('bg-music');
+            music.play().catch(e => console.log("Audio play failed:", e));
+        }
+
+        function showStep3() {
+            document.getElementById('step2').classList.remove('active');
+            document.getElementById('step3').classList.add('active');
+            triggerConfetti();
+        }
+
+        function dodgeButton() {
+            const btn = document.getElementById('no-btn');
+            const yesBtn = document.getElementById('yes-btn');
+            const container = document.getElementById('btn-container');
+            
+            // If all messages have been shown, do nothing (button is already hidden)
+            if (messageIndex >= messages.length) return;
+
+            // Switch to absolute positioning on first hover
+            if (btn.style.position !== 'absolute') {
+                btn.style.position = 'absolute';
+            }
+
+            const maxX = container.clientWidth - btn.offsetWidth;
+            const maxY = container.clientHeight - btn.offsetHeight;
+            
+            const yesRect = yesBtn.getBoundingClientRect();
+            const containerRect = container.getBoundingClientRect();
+            
+            const yesLeft = yesRect.left - containerRect.left;
+            const yesTop = yesRect.top - containerRect.top;
+            const yesRight = yesLeft + yesRect.width;
+            const yesBottom = yesTop + yesRect.height;
+            
+            const buffer = 90; 
+            
+            let randomX, randomY;
+            let isOverlapping = true;
+            let attempts = 0;
+
+            while (isOverlapping && attempts < 100) {
+                randomX = Math.floor(Math.random() * maxX);
+                randomY = Math.floor(Math.random() * maxY);
+
+                const noRight = randomX + btn.offsetWidth;
+                const noBottom = randomY + btn.offsetHeight;
+
+                if (
+                    randomX < yesRight + buffer &&
+                    noRight > yesLeft - buffer &&
+                    randomY < yesBottom + buffer &&
+                    noBottom > yesTop - buffer
+                ) {
+                    isOverlapping = true; 
+                } else {
+                    isOverlapping = false; 
+                }
+                attempts++;
+            }
+
+            // Apply new coordinates
+            btn.style.left = randomX + 'px';
+            btn.style.top = randomY + 'px';
+
+            // Show sequential tooltip message
+            showTooltip(randomX, randomY);
+
+            // Hide the button permanently if the last message was just shown
+            if (messageIndex >= messages.length) {
+                btn.style.display = 'none';
+            } else {
+                // Make the button slightly smaller each time it's dodged
+                hoverCount++;
+                if (hoverCount > 3) {
+                    let currentScale = 1 - (hoverCount * 0.05);
+                    if (currentScale < 0.2) currentScale = 0.2; 
+                    btn.style.transform = `scale(${currentScale})`;
+                }
+            }
+        }
+
+        function showTooltip(x, y) {
+            const container = document.getElementById('btn-container');
+            const tooltip = document.createElement('div');
+            tooltip.className = 'tooltip';
+            
+            // Display the current message and increment the index
+            tooltip.innerText = messages[messageIndex];
+            messageIndex++;
+
+            // Position tooltip where the button used to be
+            tooltip.style.left = (x + 20) + 'px';
+            tooltip.style.top = (y - 10) + 'px';
+
+            container.appendChild(tooltip);
+
+            // Time set to 6 seconds (6000ms) to read long messages
+            setTimeout(() => {
+                tooltip.remove();
+            }, 6000);
+        }
+
+        // Simple text-based confetti effect for the success screen
+        function triggerConfetti() {
+            for(let i=0; i<30; i++) {
+                createConfettiPiece();
+            }
+        }
+
+        function createConfettiPiece() {
+            const piece = document.createElement('div');
+            piece.innerText = "🎉";
+            piece.style.position = 'absolute';
+            piece.style.left = Math.random() * 100 + 'vw';
+            piece.style.top = '-20px';
+            piece.style.fontSize = (Math.random() * 20 + 10) + 'px';
+            piece.style.opacity = Math.random() + 0.5;
+            piece.style.transition = 'top 3s ease-in, transform 3s ease-in';
+            document.body.appendChild(piece);
+
+            setTimeout(() => {
+                piece.style.top = '100vh';
+                piece.style.transform = `rotate(${Math.random() * 360}deg)`;
+            }, 50);
+
+            setTimeout(() => piece.remove(), 3000);
+        }
+
+        // --- RECEIPT GENERATOR FUNCTION ---
+        function downloadReceipt() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 400;
+            canvas.height = 600;
+            const ctx = canvas.getContext('2d');
+
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#000000';
+            ctx.font = 'bold 24px monospace';
+            ctx.textAlign = 'center';
+
+            ctx.fillText('❤ LOVE RECEIPT ❤', 200, 60);
+            
+            ctx.font = '16px monospace';
+            ctx.fillText('--------------------------------', 200, 90);
+
+            ctx.textAlign = 'left';
+            ctx.fillText('ISSUED TO: ' + receiver, 30, 130);
+            ctx.fillText('ISSUED BY: ' + sender, 30, 160);
+            ctx.fillText('DATE: 21st May 2026', 30, 190);
+            ctx.fillText('TIME: To Be Determined', 30, 220);
+
+            ctx.textAlign = 'center';
+            ctx.fillText('--------------------------------', 200, 260);
+
+            ctx.textAlign = 'left';
+            ctx.fillText('QTY   ITEM                TOTAL', 30, 300);
+            ctx.fillText(' 1    Amazing Date        Priceless', 30, 340);
+            ctx.fillText(' 1    Unlimited Hugs      Free', 30, 370);
+            ctx.fillText(' 1    Lots of Laughs      Guaranteed', 30, 400);
+            
+            ctx.textAlign = 'center';
+            ctx.fillText('--------------------------------', 200, 440);
+
+            ctx.font = 'bold 18px monospace';
+            ctx.fillText('TOTAL DUE: 0.00', 200, 480);
+            ctx.fillText('STATUS: PAID IN FULL WITH LOVE', 200, 510);
+
+            ctx.font = '16px monospace';
+            ctx.fillText('--------------------------------', 200, 540);
+            
+            ctx.font = '14px monospace';
+            ctx.fillText('NO REFUNDS. EXCHANGES ONLY FOR KISSES.', 200, 570);
+
+            const imageURI = canvas.toDataURL('image/png');
+            
+            const link = document.createElement('a');
+            link.href = imageURI;
+            link.download = 'Our_Date_Receipt.png';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>
